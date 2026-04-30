@@ -7,7 +7,10 @@ const Datastore = require('nedb-promises');
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// إعداد المجلد الثابت للملفات (CSS, JS الصور)
 app.use(express.static(path.join(__dirname, 'public')));
+
 app.use(session({
   secret: 'dont give knight',
   resave: false,
@@ -15,6 +18,7 @@ app.use(session({
   cookie: { httpOnly: true }
 }));
 
+// تعريف قواعد البيانات في مجلد data
 const usersDb = Datastore.create({ filename: path.join(__dirname, 'data/users.db'), autoload: true });
 const postsDb = Datastore.create({ filename: path.join(__dirname, 'data/posts.db'), autoload: true });
 
@@ -24,7 +28,7 @@ async function seedDB() {
   await usersDb.insert([
     { uid: 1, username: 'admin',     password: await bcrypt.hash('s3cr3t_p4ss', 10), role: 'administrator', flag: 'nice try ' },
     { uid: 2, username: 'alice',     password: await bcrypt.hash('alice123', 10),     role: 'moderator',     flag: 'catch me if u can' },
-    { uid: 3, username: 'bob',       password: await bcrypt.hash('bob456', 10),       role: 'user',          flag: null },
+    { uid: 3, username: 'bob',        password: await bcrypt.hash('bob456', 10),       role: 'user',          flag: null },
     { uid: 4, username: 'flag_user', password: await bcrypt.hash('unfindable!', 10),  role: 'user',          flag: 'keep going ya knight' },
   ]);
   await postsDb.insert([
@@ -39,9 +43,13 @@ function requireAuth(req, res, next) {
   next();
 }
 
+// --- توجيه المسار الرئيسي لعرض واجهة التحدي ---
+app.get('/', (req, res) => {
+    // تأكد أن ملف index.html موجود في المجلد الرئيسي أو في مجلد public
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
 // VULN #1 — SQLi simulation
-// Blocked: admin'--, ' or 1=1, ' OR '1'='1
-// Works:   admin'#  | admin'/* | ' or 'x'='x | ' or true-- | ' UNION SELECT
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
 
@@ -85,10 +93,7 @@ app.get('/api/posts', requireAuth, async (req, res) => {
   res.json(posts);
 });
 
-// VULN #2 — Stored XSS (harder)
-// Blocked: <script>, <img>, <svg>, onerror=, onload=
-// Works:   <iframe src=javascript:...>, <details ontoggle=...>, <body onpageshow=...>,
-//          <input autofocus onfocus=...>, <a href=javascript:...>
+// VULN #2 — Stored XSS
 app.post('/api/posts', requireAuth, async (req, res) => {
   const { content } = req.body;
   if (!content?.trim()) return res.status(400).json({ error: 'empty content' });
@@ -141,7 +146,12 @@ app.get('/api/users/:uid', requireAuth, async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, async () => {
-  require('fs').mkdirSync(path.join(__dirname, 'data'), { recursive: true });
+  // التأكد من وجود مجلد البيانات لتجنب أخطاء التشغيل في Railway
+  const fs = require('fs');
+  const dataDir = path.join(__dirname, 'data');
+  if (!fs.existsSync(dataDir)){
+      fs.mkdirSync(dataDir, { recursive: true });
+  }
   await seedDB();
   console.log(`[ctf] server running → http://localhost:${PORT}`);
 });
