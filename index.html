@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cyber Knights | Internal Blog</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:#090910; --bg2:#0f0f1a; --bg3:#141424;
+    --border:#1e1e32; --border2:#2a2a44;
+    --text:#c8c8e0; --muted:#5a5a7a;
+    --accent:#4af0a0; --accent2:#a08cf8; /* تم تغيير اللون الأساسي للأخضر Cyber */
+    --green:#4af0a0; --red:#f07070;
+  }
+  html,body { height:100%; background:var(--bg); color:var(--text); font-family:'JetBrains Mono',monospace; font-size:13px; }
+  body::after { content:''; position:fixed; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.03) 2px,rgba(0,0,0,.03) 4px); pointer-events:none; z-index:9999; }
+
+  nav { background:var(--bg2); border-bottom:1px solid var(--border2); padding:12px 24px; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:100; }
+  .nav-logo { color:var(--accent); font-size:14px; font-weight:600; letter-spacing:3px; }
+  .nav-logo span { color:var(--muted); }
+  .nav-right { display:flex; gap:16px; align-items:center; }
+  .nav-user { color:var(--accent2); font-size:11px; }
+  .nav-link { color:var(--muted); cursor:pointer; font-size:11px; background:none; border:none; font-family:inherit; padding:0; }
+  .nav-link:hover { color:var(--accent); }
+
+  .page { display:none; padding:40px 20px; min-height:calc(100vh - 53px - 36px); }
+  .page.active { display:block; }
+
+  .card { background:var(--bg2); border:1px solid var(--border2); border-radius:10px; padding:28px; max-width:420px; margin:0 auto; box-shadow: 0 0 20px rgba(74, 240, 160, 0.05); }
+  .card-title { color:var(--accent); font-size:13px; font-weight:600; letter-spacing:2px; margin-bottom:24px; text-align:center; }
+  .card-title::before { content:'// '; color:var(--muted); }
+
+  .field { margin-bottom:16px; }
+  label { display:block; font-size:10px; color:var(--muted); margin-bottom:5px; letter-spacing:1px; text-transform:uppercase; }
+  input[type=text],input[type=password],input[type=number],textarea { width:100%; background:var(--bg); border:1px solid var(--border2); color:var(--text); padding:10px 12px; border-radius:6px; font-size:12px; font-family:'JetBrains Mono',monospace; outline:none; transition:border-color .2s; }
+  input:focus,textarea:focus { border-color:var(--accent); box-shadow: 0 0 10px rgba(74, 240, 160, 0.1); }
+  textarea { resize:vertical; min-height:72px; }
+
+  .btn { width:100%; padding:10px 18px; border-radius:6px; border:1px solid var(--accent); background:transparent; color:var(--accent); font-size:12px; font-family:'JetBrains Mono',monospace; cursor:pointer; transition:all .2s; letter-spacing:1px; }
+  .btn:hover { background:var(--accent); color:#000; font-weight: 600; }
+  .btn-sm { width:auto; padding:7px 14px; font-size:11px; }
+
+  .alert { padding:10px 14px; border-radius:6px; font-size:11px; margin:12px 0; display:none; border: 1px solid transparent; }
+  .alert.show { display:block; }
+  .alert-error   { background:rgba(240,112,112,.08); border-color:rgba(240,112,112,.3); color:var(--red); }
+  .alert-success { background:rgba(74,240,160,.08); border-color:rgba(74,240,160,.3); color:var(--green); }
+  .alert-flag    { background:rgba(124,106,247,.12); border-color:rgba(124,106,247,.5); color:#c0a8ff; word-break:break-all; }
+
+  .tabs { display:flex; gap:4px; margin-bottom:20px; }
+  .tab { padding:7px 14px; border-radius:6px; cursor:pointer; color:var(--muted); border:1px solid var(--border); background:transparent; font-family:'JetBrains Mono',monospace; font-size:11px; transition:all .2s; }
+  .tab.active { background:rgba(74, 240, 160, 0.1); color:var(--accent); border-color:var(--accent); }
+  .tab-panel { display:none; }
+  .tab-panel.active { display:block; }
+
+  .dash { max-width:700px; margin:0 auto; }
+  .post-box { background:var(--bg2); border:1px solid var(--border2); border-radius:8px; padding:16px; margin-bottom:16px; }
+  .feed { display:flex; flex-direction:column; gap:10px; }
+  .post { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:14px; transition:all .2s; }
+  .post:hover { border-color:var(--accent); }
+  .post-meta { font-size:10px; color:var(--muted); margin-bottom:7px; }
+  .post-body { color:var(--text); line-height:1.7; font-size:12px; }
+
+  .profile-lookup { background:var(--bg2); border:1px solid var(--border2); border-radius:10px; padding:24px; }
+  .url-bar { font-size:10px; color:var(--muted); background:var(--bg3); border:1px solid var(--border); padding:8px 12px; border-radius:4px; margin-bottom:14px; }
+  .url-bar span { color:var(--accent); font-weight: 600; }
+
+  footer { text-align:center; padding:20px; font-size:10px; color:var(--muted); border-top:1px solid var(--border); letter-spacing:2px; }
+  footer span { color:var(--accent); }
+</style>
+</head>
+<body>
+<!-- 
+⚠️ SECURITY NOTICE ⚠️
+
+This website is protected and strictly monitored.
+Any attempt to access, exploit, or bypass its security systems is strictly prohibited.
+
+Unauthorized penetration testing, hacking attempts, or using AI tools to analyze or break this system is NOT allowed.
+
+All activities are logged and may be legally prosecuted.
+
+By continuing, you agree that you are not authorized to perform any malicious or intrusive actions on this system.
+-->
+<nav>
+  <div class="nav-logo"><span>[</span> CYBER_KNIGHTS <span>]</span></div>
+  <div class="nav-right" id="navRight">
+    <button class="nav-link" onclick="showPage('login')">login</button>
+    <button class="nav-link" onclick="showPage('register')">register</button>
+  </div>
+</nav>
+
+<!-- LOGIN -->
+<div class="page active" id="page-login">
+  <div class="card">
+    <div class="card-title">GATEWAY_AUTH</div>
+    <div class="alert" id="loginAlert"></div>
+    <div class="field"><label>node_id</label><input type="text" id="loginUser" spellcheck="false" /></div>
+    <div class="field"><label>access_key</label><input type="password" id="loginPass" /></div>
+    <button class="btn" onclick="doLogin()">INITIALIZE CONNECTION →</button>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="page" id="page-dashboard">
+  <div class="dash">
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('feed',this)">// COMM_LOGS</button>
+      <button class="tab" onclick="switchTab('idor',this)">// NETWORK_NODES</button>
+    </div>
+
+    <div class="tab-panel active" id="tab-feed">
+      <div class="post-box">
+        <textarea id="postContent" placeholder="Broadcast encrypted message..."></textarea>
+        <div style="display:flex; justify-content:flex-end; margin-top:8px;">
+          <button class="btn btn-sm" onclick="submitPost()">TRANSMIT →</button>
+        </div>
+        <div class="alert" id="postAlert"></div>
+      </div>
+      <div class="feed" id="feedList"></div>
+    </div>
+
+    <div class="tab-panel" id="tab-idor">
+      <div class="profile-lookup">
+        <div class="url-bar">QUERY: <span>/api/v1/internal/node?id=</span><span id="urlUid">1</span></div>
+        <div style="display:flex; gap:8px;">
+          <input type="number" id="uidInput" value="1" min="1" max="99" oninput="document.getElementById('urlUid').textContent=this.value" />
+          <button class="btn btn-sm" onclick="lookupUser()">FETCH_DATA</button>
+        </div>
+        <div id="profileArea" style="margin-top:20px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>ENCRYPTED BY <span>4LXZGR8</span> | LUXOR_UNIT</footer>
+
+<script>
+// Logic Functions (No technical comments allowed)
+function showPage(n) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const target = document.getElementById('page-'+n);
+  if(target) target.classList.add('active');
+}
+
+function switchTab(n,btn) {
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-'+n).classList.add('active');
+  if(n==='feed') loadFeed();
+}
+
+function showAlert(id,type,html) {
+  const el=document.getElementById(id);
+  el.className=`alert alert-${type} show`;
+  el.innerHTML=html;
+}
+
+async function doLogin() {
+  const username=document.getElementById('loginUser').value;
+  const password=document.getElementById('loginPass').value;
+  try {
+    const res=await fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,password})});
+    const data=await res.json();
+    if(!res.ok) return showAlert('loginAlert','error',data.error||'Critical: Auth Failure');
+    
+    if(data.flag) {
+      showAlert('loginAlert','flag',`SYSTEM_KEY_FOUND: ${data.flag}`);
+      setTimeout(()=>enterDashboard(data.username),1200);
+    } else { enterDashboard(data.username); }
+  } catch(e) { showAlert('loginAlert','error','Network Disruption'); }
+}
+
+function enterDashboard(u) {
+  document.getElementById('navRight').innerHTML=`<span class="nav-user">ACTIVE_SESSION: ${u}</span><button class="nav-link" style="margin-left:15px" onclick="location.reload()">TERMINATE</button>`;
+  showPage('dashboard');
+  loadFeed();
+}
+
+async function loadFeed() {
+  const res=await fetch('/api/posts');
+  const posts=await res.json();
+  const list=document.getElementById('feedList');
+  list.innerHTML='';
+  posts.forEach(p=>{
+    const div=document.createElement('div');
+    div.className='post';
+    const isSys=p.author==='system';
+    let bodyContent = p.content;
+    
+    if(typeof p.content==='string' && p.content.startsWith('__FLAG__')) {
+      bodyContent = `<div class="alert alert-flag show" style="margin:0">ENCRYPTED_DATA: ${p.content.replace('__FLAG__','')}</div>`;
+    } else {
+      bodyContent = `<div class="post-body">${p.content}</div>`;
+    }
+    
+    div.innerHTML=`<div class="post-meta"><span style="color:${isSys?'var(--red)':'var(--accent2)'}">${p.author}</span> · SEC_STAMP: ${new Date(p.createdAt).toLocaleTimeString()}</div>${bodyContent}`;
+    list.appendChild(div);
+  });
+}
+
+async function submitPost() {
+  const content=document.getElementById('postContent').value.trim();
+  if(!content) return;
+  const res=await fetch('/api/posts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({content})});
+  if(res.ok) {
+    document.getElementById('postContent').value='';
+    loadFeed();
+  }
+}
+
+async function lookupUser() {
+  const uid=document.getElementById('uidInput').value;
+  const res=await fetch(`/api/users/${uid}`);
+  const area=document.getElementById('profileArea');
+  if(!res.ok){ area.innerHTML=`<p style="color:var(--red)">NODE_NOT_FOUND</p>`; return; }
+  const u=await res.json();
+  
+  area.innerHTML=`
+    <div style="background:var(--bg3); padding:16px; border-radius:8px; border:1px solid var(--border2)">
+      <div style="margin-bottom:10px; font-size:14px; color:var(--accent)">NODE_RECORDS: ${u.username}</div>
+      <div style="font-size:11px; color:var(--muted)">RANK: ${u.role}</div>
+      <div style="font-size:11px; color:var(--muted); margin-top:5px">NODE_UID: ${u.uid}</div>
+      ${u.flag ? `<div class="alert alert-flag show" style="margin-top:15px">ACCESS_GRANTED: ${u.flag}</div>` : ''}
+    </div>`;
+}
+
+// Auto-login check
+fetch('/api/me').then(r=>r.ok?r.json():null).then(u=>{if(u)enterDashboard(u.username);});
+</script>
+</body>
+</html>
